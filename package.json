@@ -14,8 +14,11 @@
     "expo-status-bar": "~1.2.0",
     "react": "17.0.1",
     "react-dom": "17.0.1",
+    "react-icons": "^4.3.1",
     "react-native": "0.64.3",
-    "react-native-web": "0.17.1"
+    "react-native-vector-icons": "^9.0.0",
+    "react-native-web": "0.17.1",
+    "tailwind-react-native-classnames": "^1.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"
