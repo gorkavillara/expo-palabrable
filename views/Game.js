@@ -1,9 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Text, View, Image, Modal, FlatList, TouchableOpacity } from 'react-native';
+import AsyncStorageStatic from '@react-native-async-storage/async-storage';
 import Keyboard from '../components/Keyboard';
 import tw from 'tailwind-react-native-classnames'
 import { palabras } from '../utils/palabras';
+import { dicc } from '../utils/dicc';
 import { successGifs, failGifs } from "../utils/list";
+import Toast from 'react-native-root-toast'
+import WordFeedback from '../components/WordFeedback';
+import WordExample from '../components/WordExample';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const emptyTries = [{ text: "", key: 0 }, { text: "", key: 1 }, { text: "", key: 2 }, { text: "", key: 3 }, { text: "", key: 4 }, { text: "", key: 5 }]
 
@@ -18,11 +24,26 @@ const Game = () => {
     const [update, setUpdate] = useState(false);
     const [status, setStatus] = useState("");
     const [modalOpen, setModalOpen] = useState(false)
+    const [helpModalOpen, setHelpModalOpen] = useState(false)
+    const [successGifUrl, setSuccessGifUrl] = useState("https://palabrable.gorkavillar.com/gifs/friends.gif")
+    const [failGifUrl, setFailGifUrl] = useState("https://palabrable.gorkavillar.com/gifs/friendsrage.gif")
 
     useEffect(() => {
         const index = Math.floor(Math.random() * palabras.length);
         setSecretWordIndex(index);
+        getGifUrl();
     }, [update]);
+
+    useEffect(async () => {
+        let helpVal = null;
+        try {
+            helpVal = await AsyncStorageStatic.getItem('help');
+        } catch (e) {
+            setHelpModalOpen(true);
+        }
+        if (helpVal !== null) return;
+        if (helpVal === "true") return;
+    }, [])
 
     useEffect(() => {
         const newSecretWord = palabras[secretWordIndex]
@@ -31,8 +52,26 @@ const Game = () => {
         setSecretWord(newSecretWord.toLowerCase());
     }, [secretWordIndex]);
 
+    const closeHelp = async () => {
+        try {
+            await AsyncStorageStatic.setItem('help', 'false');
+            setHelpModalOpen(false);
+        } catch (e) { console.error(e) }
+    }
+
+    const openHelp = () => {
+        setHelpModalOpen(true)
+    }
+
     const sendWord = () => {
         const newTries = tries;
+        if (!dicc.includes(newTries[tryNumber].text.toLowerCase())) {
+            Toast.show('Esa palabra no existe, prueba con otra.', {
+                duration: Toast.durations.LONG,
+                position: Toast.positions.TOP
+            });
+            return;
+        }
         if (newTries[tryNumber].text.toLowerCase() === secretWord.toLowerCase()) {
             setStatus("success")
             setModalOpen(true)
@@ -65,14 +104,25 @@ const Game = () => {
         setFailedKeys([...failedKeys, ...newFailedKeys])
     }
 
-    const getGif = status => {
+    const getGifUrl = status => {
         if (status === "success") {
             const index = Math.floor(Math.random() * successGifs.length)
-            return successGifs[index]
+            return setSuccessGifUrl(successGifs[index])
         } else {
             const index = Math.floor(Math.random() * failGifs.length)
-            return failGifs[index]
+            return setFailGifUrl(failGifs[index])
         }
+    }
+    const getGifSource = status => {
+        let uri;
+        if (status === "success") {
+            const index = Math.floor(Math.random() * successGifs.length)
+            uri = successGifs[index]
+        } else {
+            const index = Math.floor(Math.random() * failGifs.length)
+            uri = failGifs[index]
+        }
+        return { uri, width: 300, height: 300 }
     }
 
     const reset = () => {
@@ -102,24 +152,12 @@ const Game = () => {
 
     const TryRow = ({ item }) => {
         if (item.key < tryNumber) {
-            return (
-                <View style={[tw`flex flex-row my-2`]}>
-                    {[0, 1, 2, 3, 4].map((pos, j) => (
-                        <View key={j} style={[tw`w-14 h-14 mx-2 flex flex-row justify-center items-center uppercase font-bold text-4xl border
-                        ${item.text.substring(pos, pos + 1) === secretWord.substring(pos, pos + 1) ? "bg-green-400" :
-                                item.text.substring(pos, pos + 1) !== secretWord.substring(pos, pos + 1) && secretWord.toLowerCase().indexOf(item.text.substring(pos, pos + 1)) === -1 ? "bg-gray-400" : item.text.substring(pos, pos + 1) === "" ? "bg-white" : "bg-yellow-400"}
-                        `]}>
-                            <Text style={[tw`uppercase text-3xl text-gray-800 ${item.text.substring(pos, pos + 1) === secretWord.substring(pos, pos + 1) && "text-white"} ${item.text.substring(pos, pos + 1) !== secretWord.substring(pos, pos + 1) && secretWord.toLowerCase().indexOf(item.text.substring(pos, pos + 1)) === -1 && "text-white"}
-                        `]}>{item.text.substring(pos, pos + 1)}</Text>
-                        </View>
-                    ))}
-                </View>
-            )
+            return <WordFeedback word={item.text} secretWord={secretWord} />
         } else if (item.key === tryNumber) {
             return (
-                <View style={[tw`flex flex-row my-2`]}>
+                <View style={[tw`flex-row my-2`]}>
                     {[0, 1, 2, 3, 4].map((pos, j) => (
-                        <View key={j} style={[tw`w-14 h-14 mx-2 flex flex-row justify-center items-center uppercase font-bold text-4xl border`]}>
+                        <View key={j} style={[tw`w-14 h-14 mx-2 flex-row justify-center items-center uppercase font-bold text-4xl border rounded`]}>
                             <Text style={[tw`uppercase text-3xl text-gray-800`]}>{item.text.substring(pos, pos + 1)}</Text>
                         </View>
                     )
@@ -128,9 +166,9 @@ const Game = () => {
             )
         } else {
             return (
-                <View style={[tw`flex flex-row my-2`]}>
+                <View style={[tw`flex-row my-2`]}>
                     {[0, 1, 2, 3, 4].map((letra, j) => (
-                        <View key={j} style={[tw`w-14 h-14 mx-2 flex flex-row justify-center items-center uppercase font-bold text-4xl border opacity-25`]}>
+                        <View key={j} style={[tw`w-14 h-14 mx-2 flex-row justify-center items-center uppercase font-bold text-4xl border rounded opacity-25`]}>
                         </View>
                     ))}
                 </View>
@@ -138,17 +176,22 @@ const Game = () => {
         }
     }
     return (
-        <View style={[tw`h-full flex flex-col justify-between items-center py-16`]}>
-            <View style={[tw`flex flex-row items-center justify-center`]}>
-                <View style={[tw`w-12 h-12 flex justify-center items-center pr-8`]}>
-                    <Image source={require('../assets/palabrable_64.png')} alt="logo" style={[tw`w-12 h-12`]} />
-                </View>
-                <View style={[tw`flex flex-col items-baseline mb-4`]}>
-                    <Text style={[tw`text-center font-semibold text-2xl`]}>PALABRA-BLE</Text>
-                    <Text style={[tw`text-sm font-semibold italic text-yellow-500`]}>A que no puedes jugar sólo una</Text>
+        <View style={[tw`h-full flex-col justify-between items-center py-16`]}>
+            <View style={[tw`flex-row justify-between w-full px-6 mb-4`]}>
+                <TouchableOpacity style={[tw`flex-row items-center`]} onPress={openHelp}>
+                    <Icon name="ios-help-circle" size={40} color="#FFA768" />
+                </TouchableOpacity>
+                <View style={[tw`flex-row items-center`]}>
+                    <View style={[tw`w-12 h-12 justify-center items-center`]}>
+                        <Image source={require('../assets/palabrable_64.png')} alt="logo" style={[tw`w-12 h-12`]} />
+                    </View>
+                    <View style={[tw`flex-col items-baseline ml-4`]}>
+                        <Text style={[tw`text-center font-semibold text-2xl`]}>PALABRA-BLE</Text>
+                        <Text style={[tw`text-sm font-semibold italic text-yellow-500`]}>A que no puedes jugar sólo una</Text>
+                    </View>
                 </View>
             </View>
-            <View style={[tw`flex flex-col items-center justify-center max-w-2xl my-2`]}>
+            <View style={[tw`flex-col items-center justify-center max-w-2xl my-2`]}>
                 <FlatList
                     data={tries}
                     renderItem={TryRow}
@@ -161,31 +204,60 @@ const Game = () => {
                 transparent={false}
                 visible={modalOpen}
                 onRequestClose={() => {
-                    Alert.alert("Modal has been closed.");
                     setModalOpen(!modalOpen);
                 }}
             >
-                <View style={[tw`flex justify-center items-center h-full`]}>
+                <View style={[tw`justify-center items-center h-full`]}>
                     {status === "success" && (
-                        <View style={[tw`flex flex-col justify-center items-center`]}>
-                            <Image source={getGif("success")} alt="¡Enhorabuena!" />
+                        <View style={[tw`flex-col justify-center items-center`]}>
+                            <Image source={getGifSource("success")} alt="¡Enhorabuena!" />
                             <Text style={[tw`text-lg font-semibold text-green-600 text-center py-4`]}>¡Enhorabuena! ¿Quieres volver a intentarlo?</Text>
-                            <View style={[tw`flex flex-row`]}>
+                            <View style={[tw`flex-row`]}>
                                 <TouchableOpacity style={[tw`border border-red-500 rounded-lg py-2 px-4 mx-2`]} onPress={() => setModalOpen(false)}><Text style={[tw`text-red-500 text-lg`]}>No por ahora...</Text></TouchableOpacity>
                                 <TouchableOpacity style={[tw`bg-green-500 border border-green-500 rounded-lg py-2 px-4 mx-2`]} onPress={reset}><Text style={[tw`text-white text-lg`]}>¡Pues claro!</Text></TouchableOpacity>
                             </View>
                         </View>
                     )}
-                    {status === "fail" && <View style={[tw`flex flex-col justify-center items-center`]}>
-                        <Image source={getGif("fail")} alt="¡Fallaste!" />
+                    {status === "fail" && <View style={[tw`flex-col justify-center items-center`]}>
+                        <Image source={getGifSource("fail")} alt="¡Fallaste!" />
                         <Text style={[tw`text-lg font-semibold text-red-600 text-center py-4`]}>¡Noooo!¡Fallaste! ¿Quieres volver a intentarlo?</Text>
                         <Text style={[tw`text-lg text-gray-600 text-center py-4`]}>La respuesta correcta era... <Text style={[tw`uppercase font-bold`]} > {secretWord}</Text></Text>
-                        <View style={[tw`flex flex-row`]}>
+                        <View style={[tw`flex-row`]}>
                             <TouchableOpacity style={[tw`border border-red-500 rounded-lg py-2 px-4 mx-2`]} onPress={() => setModalOpen(false)}><Text style={[tw`text-red-500 text-lg`]}>No por ahora...</Text></TouchableOpacity>
                             <TouchableOpacity style={
                                 [tw`bg-green-500 text-white border border-green-500 rounded-lg py-2 px-4 mx-2`]} onPress={reset}><Text style={[tw`text-white text-lg`]}>¡Pues claro!</Text></TouchableOpacity>
                         </View>
                     </View>}
+                </View>
+            </Modal>
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={helpModalOpen}
+                onRequestClose={closeHelp}>
+                <View style={[tw`bg-gray-800 bg-opacity-40 flex-row justify-center items-center h-full`]}>
+                    <View style={[tw`bg-white w-5/6 rounded-lg p-6 flex-col items-center justify-between`]}>
+                        <Text style={[tw`text-black text-2xl font-bold`]}>Cómo se juega</Text>
+                        <View style={[tw`mt-4 w-full overflow-hidden`]}>
+                            <View style={[tw`items-center`]}>
+                                <WordExample word={"nueva"} secretWord={"anida"} />
+                            </View>
+                            <View style={[tw`flex-row mt-2`]}>
+                                <View style={[tw`mt-2 w-3 h-3 bg-gray-400 rounded-full`]}></View>
+                                <Text style={[tw`ml-3 text-black text-lg`]}>Las letras U, E y V <Text style={[tw`font-bold`]}>NO</Text> se encuentran en la palabra secreta.</Text>
+                            </View>
+                            <View style={[tw`flex-row mt-2`]}>
+                                <View style={[tw`mt-2 w-3 h-3 bg-yellow-400 rounded-full`]}></View>
+                                <Text style={[tw`ml-3 text-black text-lg`]}>La letra N <Text style={[tw`font-bold`]}>SÍ</Text> se encuentra en la palabra secreta, pero <Text style={[tw`font-bold`]}>está en diferente lugar.</Text></Text>
+                            </View>
+                            <View style={[tw`flex-row mt-2`]}>
+                                <View style={[tw`mt-2 w-3 h-3 bg-green-400 rounded-full`]}></View>
+                                <Text style={[tw`ml-3 text-black text-lg`]}>La letra A <Text style={[tw`font-bold`]}>SÍ</Text> se encuentra en la palabra secreta, y además <Text style={[tw`font-bold`]}>está en el lugar correcto.</Text></Text>
+                            </View>
+                        </View>
+                        <TouchableOpacity style={
+                            [tw`mt-4 bg-green-500 text-white border border-green-500 rounded-lg py-2 px-4 mx-2`]} onPress={closeHelp}><Text style={[tw`text-white text-lg`]}>Comenzar</Text></TouchableOpacity>
+                    </View>
                 </View>
             </Modal>
         </View>

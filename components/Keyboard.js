@@ -46,7 +46,7 @@ const Keyboard = ({
                             {key !== "back" && key !== "send" && (
                                 <TouchableOpacity
                                     key={j}
-                                    style={[tw`bg-gray-300 mx-1
+                                    style={[tw`bg-gray-300 mr-1
                                         ${failedKeys.includes(key) && "bg-gray-800"}
                                         ${misplacedKeys.includes(key) && "bg-yellow-500"}
                                         ${successKeys.includes(key) && "bg-green-500"}
