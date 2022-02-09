@@ -13,13 +13,11 @@ const Game = () => {
     const [failedKeys, setFailedKeys] = useState([]);
     const [secretWordIndex, setSecretWordIndex] = useState(0);
     const [secretWord, setSecretWord] = useState("");
-    // const [word, setWord] = useState("");
     const [tries, setTries] = useState(emptyTries);
     const [tryNumber, setTryNumber] = useState(0);
     const [update, setUpdate] = useState(false);
     const [status, setStatus] = useState("");
     const [modalOpen, setModalOpen] = useState(false)
-    const [juego, setJuego] = useState("Juego")
 
     useEffect(() => {
         const index = Math.floor(Math.random() * palabras.length);
@@ -109,7 +107,7 @@ const Game = () => {
                     {[0, 1, 2, 3, 4].map((pos, j) => (
                         <View key={j} style={[tw`w-14 h-14 mx-2 flex flex-row justify-center items-center uppercase font-bold text-4xl border
                         ${item.text.substring(pos, pos + 1) === secretWord.substring(pos, pos + 1) ? "bg-green-400" :
-                                item.text.substring(pos, pos + 1) !== secretWord.substring(pos, pos + 1) && secretWord.toLowerCase().indexOf(item.text.substring(pos, pos + 1)) === -1 ? "bg-gray-400" : "bg-yellow-400"}
+                                item.text.substring(pos, pos + 1) !== secretWord.substring(pos, pos + 1) && secretWord.toLowerCase().indexOf(item.text.substring(pos, pos + 1)) === -1 ? "bg-gray-400" : item.text.substring(pos, pos + 1) === "" ? "bg-white" : "bg-yellow-400"}
                         `]}>
                             <Text style={[tw`uppercase text-3xl text-gray-800 ${item.text.substring(pos, pos + 1) === secretWord.substring(pos, pos + 1) && "text-white"} ${item.text.substring(pos, pos + 1) !== secretWord.substring(pos, pos + 1) && secretWord.toLowerCase().indexOf(item.text.substring(pos, pos + 1)) === -1 && "text-white"}
                         `]}>{item.text.substring(pos, pos + 1)}</Text>
@@ -145,13 +143,12 @@ const Game = () => {
                 <View style={[tw`w-12 h-12 flex justify-center items-center pr-8`]}>
                     <Image source={require('../assets/palabrable_64.png')} alt="logo" style={[tw`w-12 h-12`]} />
                 </View>
-                <View style={[tw`flex flex-col items-baseline`]}>
+                <View style={[tw`flex flex-col items-baseline mb-4`]}>
                     <Text style={[tw`text-center font-semibold text-2xl`]}>PALABRA-BLE</Text>
                     <Text style={[tw`text-sm font-semibold italic text-yellow-500`]}>A que no puedes jugar sólo una</Text>
                 </View>
             </View>
-            <View style={[tw`flex flex-col items-center justify-center max-w-2xl`]}>
-                <Text>{secretWord}</Text>
+            <View style={[tw`flex flex-col items-center justify-center max-w-2xl my-2`]}>
                 <FlatList
                     data={tries}
                     renderItem={TryRow}
@@ -171,7 +168,7 @@ const Game = () => {
                 <View style={[tw`flex justify-center items-center h-full`]}>
                     {status === "success" && (
                         <View style={[tw`flex flex-col justify-center items-center`]}>
-                            <Image source={(getGif("success"))} alt="¡Enhorabuena!" />
+                            <Image source={getGif("success")} alt="¡Enhorabuena!" />
                             <Text style={[tw`text-lg font-semibold text-green-600 text-center py-4`]}>¡Enhorabuena! ¿Quieres volver a intentarlo?</Text>
                             <View style={[tw`flex flex-row`]}>
                                 <TouchableOpacity style={[tw`border border-red-500 rounded-lg py-2 px-4 mx-2`]} onPress={() => setModalOpen(false)}><Text style={[tw`text-red-500 text-lg`]}>No por ahora...</Text></TouchableOpacity>
@@ -182,7 +179,7 @@ const Game = () => {
                     {status === "fail" && <View style={[tw`flex flex-col justify-center items-center`]}>
                         <Image source={getGif("fail")} alt="¡Fallaste!" />
                         <Text style={[tw`text-lg font-semibold text-red-600 text-center py-4`]}>¡Noooo!¡Fallaste! ¿Quieres volver a intentarlo?</Text>
-                        <Text style={[tw`text-lg text-gray-600 text-center`]}>La respuesta correcta era... <Text style={[tw`uppercase font-bold`]} > {secretWord}</Text></Text>
+                        <Text style={[tw`text-lg text-gray-600 text-center py-4`]}>La respuesta correcta era... <Text style={[tw`uppercase font-bold`]} > {secretWord}</Text></Text>
                         <View style={[tw`flex flex-row`]}>
                             <TouchableOpacity style={[tw`border border-red-500 rounded-lg py-2 px-4 mx-2`]} onPress={() => setModalOpen(false)}><Text style={[tw`text-red-500 text-lg`]}>No por ahora...</Text></TouchableOpacity>
                             <TouchableOpacity style={

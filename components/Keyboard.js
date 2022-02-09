@@ -40,7 +40,7 @@ const Keyboard = ({
                                     style={[tw`bg-blue-600 text-white mx-1 w-14 h-10 rounded-lg uppercase text-2xl flex justify-center items-center`]}
                                     onPress={() => (status === "" ? type(key) : reset())}
                                 >
-                                    <View>{status === "" ? <Icon name="send" size={30} color="#fff" /> : <Icon name="rocket" size={30} color="#fff" />}</View>
+                                    <View>{status === "" ? <Icon name="send" size={30} color="#fff" /> : <Icon name="refresh" size={30} color="#fff" />}</View>
                                 </TouchableOpacity>
                             )}
                             {key !== "back" && key !== "send" && (
