@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { View, TouchableOpacity, Text } from "react-native"
 import Icon from 'react-native-vector-icons/Ionicons';
 import tw from 'tailwind-react-native-classnames'
@@ -16,31 +16,6 @@ const Keyboard = ({
     reset,
     status,
 }) => {
-    const [failedKeys, setFailedKeys] = useState([]);
-    const [misplacedKeys, setMisplacedKeys] = useState([]);
-    const [successKeys, setSuccessKeys] = useState([]);
-    useEffect(() => {
-        if (tries.length === 0) return;
-        let newSuccessKeys = []
-        let newMisplacedKeys = []
-        let newFailedKeys = []
-        tries.forEach(tr => {
-            const chars = [0, 1, 2, 3, 4]
-            chars.forEach(i => {
-                const char = tr.text.substring(i, i + 1);
-                if (char.toLowerCase() === secretWord.substring(i, i + 1).toLowerCase()) {
-                    newSuccessKeys.push(char)
-                } else if (secretWord.toLowerCase().indexOf(char.toLowerCase()) === -1) {
-                    newFailedKeys.push(char)
-                } else {
-                    newMisplacedKeys.push(char)
-                }
-            })
-        })
-        setSuccessKeys(newSuccessKeys)
-        setMisplacedKeys(newMisplacedKeys)
-        setFailedKeys(newFailedKeys)
-    }, [secretWord])
     return (
         <View style={[tw`flex flex-col items-center`]}>
             {keys.map((row, i) => (

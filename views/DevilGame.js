@@ -14,7 +14,7 @@ import { RootSiblingParent } from 'react-native-root-siblings';
 
 const emptyTries = [{ text: "", key: 0 }, { text: "", key: 1 }, { text: "", key: 2 }, { text: "", key: 3 }, { text: "", key: 4 }, { text: "", key: 5 }]
 
-const Game = ({ setRoute }) => {
+const DevilGame = ({ setRoute }) => {
     const [successKeys, setSuccessKeys] = useState([]);
     const [misplacedKeys, setMisplacedKeys] = useState([]);
     const [failedKeys, setFailedKeys] = useState([]);
@@ -74,13 +74,15 @@ const Game = ({ setRoute }) => {
             return;
         }
         if (newTries[tryNumber].text.toLowerCase() === secretWord.toLowerCase()) {
-            setStatus("success")
             setModalOpen(true)
+            return setStatus("success")
         } else if (tryNumber === 5) {
-            setStatus("fail")
             setModalOpen(true)
+            return setStatus("fail")
         }
         setTryNumber(tryNumber + 1);
+        const index = Math.floor(Math.random() * palabras.length);
+        setSecretWordIndex(index);
         updateKeyboard();
     };
 
@@ -181,18 +183,18 @@ const Game = ({ setRoute }) => {
             <View style={[tw`h-full flex-col justify-between items-center py-16`]}>
                 <View style={[tw`flex-row justify-between w-full px-6 mb-4`]}>
                     <TouchableOpacity style={[tw`flex-row items-center`]} onPress={openHelp}>
-                        <Icon name="ios-help-circle" size={40} color="#FFA768" />
+                        <Icon name="ios-help-circle" size={40} color="#5200FF" />
                     </TouchableOpacity>
                     <View style={[tw`flex-row items-center`]}>
                         <View style={[tw`w-12 h-12 justify-center items-center`]}>
-                            <Image source={require('../assets/icon_classic.png')} alt="logo" style={[tw`w-12 h-12`]} />
+                            <Image source={require('../assets/icon_devil.png')} alt="logo" style={[tw`w-12 h-12`]} />
                         </View>
                         <View style={[tw`flex-col items-baseline ml-4`]}>
-                            <Text style={[tw`text-center font-semibold text-2xl`]}>Clásico</Text>
+                            <Text style={[tw`text-center font-semibold text-2xl`]}>Diabólico</Text>
                         </View>
                     </View>
                     <TouchableOpacity style={[tw`flex-row items-center`]} onPress={() => setRoute('home')}>
-                        <Icon name="md-home-sharp" size={32} color="#FFA768" />
+                        <Icon name="md-home-sharp" size={32} color="#5200FF" />
                     </TouchableOpacity>
                 </View>
                 <View style={[tw`flex-col items-center justify-center max-w-2xl my-2`]}>
@@ -269,4 +271,4 @@ const Game = ({ setRoute }) => {
     )
 };
 
-export default Game;
+export default DevilGame;

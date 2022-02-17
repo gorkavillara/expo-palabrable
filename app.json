@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "expo-palabrable",
-    "slug": "expo-palabrable",
+    "name": "Palabrable",
+    "slug": "palabrable",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,11 +20,13 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.palabrable.gvil",
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.palabrable.gvil"
+      "permissions": []
     },
     "web": {
       "favicon": "./assets/favicon.png"
